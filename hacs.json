@@ -4,5 +4,7 @@
   "render_readme": true,
   "homeassistant": "2025.1.0",
   "content_in_root": true,
-  "filename": "ha-alias-manager.js"
+  "filename": "ha-alias-manager.js",
+  "country": [],
+  "iot_class": "local_polling"
 }

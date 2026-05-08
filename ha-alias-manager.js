@@ -46,10 +46,10 @@ class AliasManagerCard extends HTMLElement {
         tbody tr { border-bottom: 1px solid var(--divider-color, #eee); }
         tbody tr:hover { background: var(--secondary-background-color, #f9f9f9); }
         td { padding: 6px 8px; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--primary-text-color); }
-        td.aliases-cell { white-space: normal; }
+        td.aliases-cell { white-space: normal; padding-right: 8px; }
         .friendly-name { font-size: 13px; }
         .entity-id { font-size: 11px; color: var(--secondary-text-color); font-family: monospace; }
-        .alias-input { width: 100%; font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--divider-color, #ccc); background: var(--card-background-color, white); color: var(--primary-text-color); }
+        .alias-input { width: calc(100% - 4px); font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--divider-color, #ccc); background: var(--card-background-color, white); color: var(--primary-text-color); }
         .alias-input.modified { border-color: orange; background: rgba(255,165,0,0.08); }
         .badge { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 6px; background: var(--secondary-background-color, #eee); color: var(--secondary-text-color); }
         .toggle { width: 34px; height: 20px; border-radius: 10px; border: none; cursor: pointer; position: relative; }
@@ -217,7 +217,7 @@ class AliasManagerCard extends HTMLElement {
             : `<input class="alias-input ${modified ? 'modified' : ''}" data-id="${this.esc(e.entity_id)}" value="${this.esc(curAlias)}" placeholder="alias1, alias2" />`
           }
         </td>
-        <td><span class="badge">${e.area || '–'}</span></td>
+        <td style="overflow:hidden;text-overflow:ellipsis;max-width:80px;" title="${this.esc(e.area)}"><span class="badge" style="max-width:100%;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle;">${this.esc(e.area) || '–'}</span></td>
         <td style="text-align:center">
           <button class="toggle ${curAssist ? 'on' : 'off'}" data-id="${e.entity_id}" aria-label="Assist toggle"></button>
         </td>
@@ -366,3 +366,13 @@ class AliasManagerCard extends HTMLElement {
 }
 
 customElements.define('ha-alias-manager', AliasManagerCard);
+
+// Register card in HACS/Lovelace card picker
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: 'ha-alias-manager',
+  name: 'HA Alias Manager',
+  description: 'Bulk manage entity aliases and Assist exposure',
+  preview: false,
+  documentationURL: 'https://github.com/andreasbloch/ha-alias-manager',
+});
