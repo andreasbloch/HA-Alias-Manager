@@ -46,7 +46,7 @@ class AliasManagerCard extends HTMLElement {
         tbody tr { border-bottom: 1px solid var(--divider-color, #eee); }
         tbody tr:hover { background: var(--secondary-background-color, #f9f9f9); }
         td { padding: 6px 8px; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--primary-text-color); }
-        td.aliases-cell { white-space: normal; padding-right: 8px; }
+        td.aliases-cell { white-space: normal; padding: 4px 12px 4px 8px; overflow: visible; }
         .friendly-name { font-size: 13px; }
         .entity-id { font-size: 11px; color: var(--secondary-text-color); font-family: monospace; }
         .alias-input { width: calc(100% - 4px); font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--divider-color, #ccc); background: var(--card-background-color, white); color: var(--primary-text-color); }
