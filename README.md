@@ -23,15 +23,19 @@ Home Assistant's default UI requires you to click into each entity individually 
 
 ## Installation
 
-### Via HACS (recommended)
+## Installation
 
-1. Open HACS in your Home Assistant instance
-2. Click the three-dot menu → **Custom repositories**
-3. Add `https://github.com/andreasbloch/ha-alias-manager` as a **Dashboard** type
-4. Search for "HA Alias Manager" and install it
-5. Hard-refresh your browser (Ctrl+Shift+R)
+### Option A: HACS (Recommended)
 
-### Manual
+**Note:** Currently in the official HACS inclusion process. Until then, please use the **Custom Repository** method below.
+
+1. Open **HACS** in your Home Assistant instance.
+2. Click the three-dot menu in the top right corner and select **Custom repositories**.
+3. Add `https://github.com/andreasbloch/HA-Alias-Manager` and select **Lovelace** as the category.
+4. Search for "HA Alias Manager" and install it.
+5. Reload your browser.
+
+### Option B: Manual Installation
 
 1. Download `ha-alias-manager.js` from the [latest release](https://github.com/andreasbloch/ha-alias-manager/releases)
 2. Copy to your Home Assistant `config/www/` directory:
