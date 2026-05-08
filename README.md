@@ -59,7 +59,7 @@ type: custom:ha-alias-manager
 For best results, use **Panel Mode** on a dedicated dashboard:
 
 1. Create a new dashboard (Settings → Dashboards → Add Dashboard)
-2. Enable Panel Mode (Edit Dashboard → Three-dot menu → Panel Mode)
+2. Enable Panel Mode (Edit Dashboard → Edit View → Panel Mode)
 3. Add the card — it will fill the entire screen
 
 ## Card configuration
