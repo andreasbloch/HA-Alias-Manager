@@ -3,10 +3,12 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 [![GitHub release](https://img.shields.io/github/release/andreasbloch/ha-alias-manager.svg)](https://github.com/andreasbloch/ha-alias-manager/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-%23FFDD00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/andreasbloch)
 
 A custom Lovelace card for bulk management of entity aliases and Assist exposure in Home Assistant.
 
 ![HA Alias Manager](screenshot.png?raw=true)
+
 
 ## Features
 
