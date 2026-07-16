@@ -24,5 +24,11 @@
   "pageOf": "{start}–{end} von {total}",
   "saved": "{count} gespeichert",
   "savedErrors": "{count} gespeichert, {errors} Fehler",
-  "assistToggle": "Assist umschalten"
+  "assistToggle": "Assist umschalten",
+  "selectedCount": "{count} ausgewählt",
+  "bulkAssistOn": "Assist AN",
+  "bulkAssistOff": "Assist AUS",
+  "clearSelection": "Auswahl aufheben",
+  "selectAllTitle": "Alle gefilterten Entitäten auswählen",
+  "selectRow": "Entität auswählen"
 }
