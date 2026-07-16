@@ -1,63 +1,41 @@
-const ALIAS_MANAGER_TRANSLATIONS = {
-  en: {
-    title: 'Alias Manager',
-    reload: 'Reload',
-    reloadTitle: 'Reload entities',
-    save: 'Save',
-    search: 'Search...',
-    allDomains: 'All domains',
-    allAreas: 'All areas',
-    allAssist: 'All',
-    assistOn: 'Assist enabled',
-    assistOff: 'Assist disabled',
-    loadingEntities: 'Loading entities...',
-    loading: 'Loading...',
-    loadingAliases: 'loading...',
-    entitiesLoaded: '{count} entities loaded.',
-    noEntities: 'No entities found.',
-    error: 'Error: {message}',
-    colEntity: 'Entity',
-    colDomain: 'Domain',
-    colAliases: 'Aliases',
-    colArea: 'Area',
-    colAssist: 'Assist',
-    aliasPlaceholder: 'alias1, alias2',
-    pageOf: '{start}–{end} of {total}',
-    saved: '{count} saved',
-    savedErrors: '{count} saved, {errors} errors',
-    assistToggle: 'Assist toggle'
-  },
-  de: {
-    title: 'Alias Manager',
-    reload: 'Neu laden',
-    reloadTitle: 'Entitäten neu laden',
-    save: 'Speichern',
-    search: 'Suchen...',
-    allDomains: 'Alle Domains',
-    allAreas: 'Alle Bereiche',
-    allAssist: 'Alle',
-    assistOn: 'Assist aktiv',
-    assistOff: 'Assist inaktiv',
-    loadingEntities: 'Lade Entitäten...',
-    loading: 'Lade...',
-    loadingAliases: 'lädt...',
-    entitiesLoaded: '{count} Entitäten geladen.',
-    noEntities: 'Keine Entitäten gefunden.',
-    error: 'Fehler: {message}',
-    colEntity: 'Entität',
-    colDomain: 'Domain',
-    colAliases: 'Aliases',
-    colArea: 'Bereich',
-    colAssist: 'Assist',
-    aliasPlaceholder: 'alias1, alias2',
-    pageOf: '{start}–{end} von {total}',
-    saved: '{count} gespeichert',
-    savedErrors: '{count} gespeichert, {errors} Fehler',
-    assistToggle: 'Assist umschalten'
-  }
+const CARD_VERSION = '1.1.1';
+const MODULE_URL = import.meta.url;
+const SUPPORTED_LANGUAGES = ['en', 'de', 'fr', 'es', 'it', 'nl', 'pl', 'pt', 'cs', 'sv'];
+
+// Embedded English fallback – keeps the card fully functional even if the
+// translations/ folder is missing (manual install) or a fetch fails.
+const FALLBACK_EN = {
+  title: 'Alias Manager',
+  reload: 'Reload',
+  reloadTitle: 'Reload entities',
+  save: 'Save',
+  search: 'Search...',
+  allDomains: 'All domains',
+  allAreas: 'All areas',
+  allAssist: 'All',
+  assistOn: 'Assist enabled',
+  assistOff: 'Assist disabled',
+  loadingEntities: 'Loading entities...',
+  loading: 'Loading...',
+  loadingAliases: 'loading...',
+  entitiesLoaded: '{count} entities loaded.',
+  noEntities: 'No entities found.',
+  error: 'Error: {message}',
+  colEntity: 'Entity',
+  colDomain: 'Domain',
+  colAliases: 'Aliases',
+  colArea: 'Area',
+  colAssist: 'Assist',
+  aliasPlaceholder: 'alias1, alias2',
+  pageOf: '{start}\u2013{end} of {total}',
+  saved: '{count} saved',
+  savedErrors: '{count} saved, {errors} errors',
+  assistToggle: 'Toggle Assist'
 };
 
 class AliasManagerCard extends HTMLElement {
+  static _i18nCache = {};
+
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
@@ -69,11 +47,11 @@ class AliasManagerCard extends HTMLElement {
     this._pageSize = 50;
     this._aliasCache = {};
     this._lang = 'en';
+    this._dict = FALLBACK_EN;
   }
 
   setConfig(config) {
     this._config = config;
-    this._lang = this.resolveLang();
     this.render();
   }
 
@@ -81,13 +59,18 @@ class AliasManagerCard extends HTMLElement {
     this._hass = hass;
     if (!this._loaded) {
       this._loaded = true;
-      const lang = this.resolveLang();
-      if (lang !== this._lang) {
-        this._lang = lang;
-        this.render();
-      }
-      this.loadEntities();
+      this._init();
     }
+  }
+
+  async _init() {
+    const lang = this.resolveLang();
+    if (lang !== this._lang || this._dict === FALLBACK_EN) {
+      this._lang = lang;
+      await this._loadTranslations(lang);
+      this.render();
+    }
+    this.loadEntities();
   }
 
   resolveLang() {
@@ -97,15 +80,33 @@ class AliasManagerCard extends HTMLElement {
       || (typeof navigator !== 'undefined' ? navigator.language : 'en')
       || 'en';
     raw = String(raw).toLowerCase();
-    if (ALIAS_MANAGER_TRANSLATIONS[raw]) return raw;
+    if (SUPPORTED_LANGUAGES.includes(raw)) return raw;
     const base = raw.split('-')[0];
-    if (ALIAS_MANAGER_TRANSLATIONS[base]) return base;
+    if (SUPPORTED_LANGUAGES.includes(base)) return base;
     return 'en';
   }
 
+  async _loadTranslations(lang) {
+    if (lang === 'en') { this._dict = FALLBACK_EN; return; }
+    if (AliasManagerCard._i18nCache[lang]) {
+      this._dict = AliasManagerCard._i18nCache[lang];
+      return;
+    }
+    try {
+      const url = new URL(`./translations/${lang}.json?v=${CARD_VERSION}`, MODULE_URL);
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      AliasManagerCard._i18nCache[lang] = data;
+      this._dict = data;
+    } catch (e) {
+      console.warn(`ha-alias-manager: could not load translations/${lang}.json, falling back to English.`, e);
+      this._dict = FALLBACK_EN;
+    }
+  }
+
   t(key, params) {
-    const dict = ALIAS_MANAGER_TRANSLATIONS[this._lang] || ALIAS_MANAGER_TRANSLATIONS.en;
-    let str = dict[key] !== undefined ? dict[key] : (ALIAS_MANAGER_TRANSLATIONS.en[key] || key);
+    let str = this._dict[key] !== undefined ? this._dict[key] : (FALLBACK_EN[key] || key);
     if (params) {
       for (const [k, v] of Object.entries(params)) {
         str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
@@ -307,7 +308,7 @@ class AliasManagerCard extends HTMLElement {
             : `<input class="alias-input ${modified ? 'modified' : ''}" data-id="${this.esc(e.entity_id)}" value="${this.esc(curAlias)}" placeholder="${this.t('aliasPlaceholder')}" />`
           }
         </td>
-        <td style="overflow:hidden;text-overflow:ellipsis;max-width:80px;" title="${this.esc(e.area)}"><span class="badge" style="max-width:100%;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle;">${this.esc(e.area) || '–'}</span></td>
+        <td style="overflow:hidden;text-overflow:ellipsis;max-width:80px;" title="${this.esc(e.area)}"><span class="badge" style="max-width:100%;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle;">${this.esc(e.area) || '\u2013'}</span></td>
         <td style="text-align:center">
           <button class="toggle ${curAssist ? 'on' : 'off'}" data-id="${e.entity_id}" aria-label="${this.t('assistToggle')}"></button>
         </td>
@@ -467,3 +468,5 @@ window.customCards.push({
   preview: false,
   documentationURL: 'https://github.com/andreasbloch/ha-alias-manager',
 });
+
+console.info(`%c HA-ALIAS-MANAGER %c v${CARD_VERSION} `, 'color: white; background: #03a9f4; font-weight: 700;', 'color: #03a9f4; background: white; font-weight: 700;');
