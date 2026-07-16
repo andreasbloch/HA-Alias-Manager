@@ -1,4 +1,4 @@
-const CARD_VERSION = '1.1.1';
+const CARD_VERSION = '1.2.0';
 const MODULE_URL = import.meta.url;
 const SUPPORTED_LANGUAGES = ['en', 'de', 'fr', 'es', 'it', 'nl', 'pl', 'pt', 'cs', 'sv'];
 
@@ -30,7 +30,13 @@ const FALLBACK_EN = {
   pageOf: '{start}\u2013{end} of {total}',
   saved: '{count} saved',
   savedErrors: '{count} saved, {errors} errors',
-  assistToggle: 'Toggle Assist'
+  assistToggle: 'Toggle Assist',
+  selectedCount: '{count} selected',
+  bulkAssistOn: 'Assist ON',
+  bulkAssistOff: 'Assist OFF',
+  clearSelection: 'Clear selection',
+  selectAllTitle: 'Select all filtered entities',
+  selectRow: 'Select entity'
 };
 
 class AliasManagerCard extends HTMLElement {
@@ -46,6 +52,7 @@ class AliasManagerCard extends HTMLElement {
     this._page = 0;
     this._pageSize = 50;
     this._aliasCache = {};
+    this._selected = new Set();
     this._lang = 'en';
     this._dict = FALLBACK_EN;
   }
@@ -160,6 +167,12 @@ class AliasManagerCard extends HTMLElement {
         .paging button.active { background: var(--primary-color, #03a9f4); color: white; border-color: var(--primary-color, #03a9f4); }
         .paging span { font-size: 12px; color: var(--secondary-text-color); }
         .loading-aliases { font-size: 11px; color: var(--secondary-text-color); font-style: italic; }
+        .bulk-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 10px; margin-bottom: 8px; border-radius: 8px; background: var(--secondary-background-color, #f5f5f5); font-size: 13px; color: var(--primary-text-color); }
+        .bulk-bar:empty { display: none; }
+        .bulk-bar button { font-size: 12px; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--divider-color, #ccc); background: var(--card-background-color, white); color: var(--primary-text-color); cursor: pointer; }
+        .bulk-bar button.bulk-on { border-color: var(--success-color, #4CAF50); color: var(--success-color, #4CAF50); }
+        .bulk-bar button.bulk-off { border-color: var(--error-color, #f44336); color: var(--error-color, #f44336); }
+        input[type="checkbox"] { cursor: pointer; }
       </style>
       <div class="card">
         <h2>
@@ -178,6 +191,7 @@ class AliasManagerCard extends HTMLElement {
           </select>
         </div>
         <div class="status" id="statusBar"></div>
+        <div class="bulk-bar" id="bulkBar"></div>
         <div id="tableWrapper"><div class="empty">${this.t('loadingEntities')}</div></div>
         <div class="paging" id="pagingBar"></div>
       </div>`;
@@ -296,7 +310,7 @@ class AliasManagerCard extends HTMLElement {
       const modified = this._changes[e.entity_id] !== undefined;
       const loading = e.aliases === null;
       return `<tr>
-        <td><input type="checkbox" data-id="${e.entity_id}" /></td>
+        <td><input type="checkbox" class="row-select" data-id="${this.esc(e.entity_id)}" ${this._selected.has(e.entity_id) ? 'checked' : ''} aria-label="${this.t('selectRow')}" /></td>
         <td title="${this.esc(e.entity_id)}">
           <div class="friendly-name">${this.esc(e.friendly_name)}</div>
           <div class="entity-id">${this.esc(e.entity_id)}</div>
@@ -318,7 +332,7 @@ class AliasManagerCard extends HTMLElement {
     this.shadowRoot.getElementById('tableWrapper').innerHTML = `
       <table>
         <thead><tr>
-          <th></th><th>${this.t('colEntity')}</th><th>${this.t('colDomain')}</th>
+          <th><input type="checkbox" id="selectAll" title="${this.t('selectAllTitle')}" /></th><th>${this.t('colEntity')}</th><th>${this.t('colDomain')}</th>
           <th>${this.t('colAliases')}</th><th>${this.t('colArea')}</th>
           <th style="text-align:center">${this.t('colAssist')}</th>
         </tr></thead>
@@ -356,6 +370,81 @@ class AliasManagerCard extends HTMLElement {
         this.updateChangeCount();
       });
     });
+
+    this.shadowRoot.querySelectorAll('.row-select').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const id = cb.dataset.id;
+        if (cb.checked) this._selected.add(id);
+        else this._selected.delete(id);
+        this.syncSelectAllState();
+        this.updateBulkBar();
+      });
+    });
+
+    const selectAll = this.shadowRoot.getElementById('selectAll');
+    if (selectAll) {
+      selectAll.addEventListener('change', () => {
+        const allSelected = this._filtered.length > 0 && this._filtered.every(e => this._selected.has(e.entity_id));
+        if (allSelected) {
+          this._filtered.forEach(e => this._selected.delete(e.entity_id));
+        } else {
+          this._filtered.forEach(e => this._selected.add(e.entity_id));
+        }
+        this.renderTable();
+        this.updateBulkBar();
+      });
+    }
+
+    this.syncSelectAllState();
+    this.updateBulkBar();
+  }
+
+  syncSelectAllState() {
+    const selectAll = this.shadowRoot.getElementById('selectAll');
+    if (!selectAll) return;
+    const selectedInFilter = this._filtered.filter(e => this._selected.has(e.entity_id)).length;
+    selectAll.checked = this._filtered.length > 0 && selectedInFilter === this._filtered.length;
+    selectAll.indeterminate = selectedInFilter > 0 && selectedInFilter < this._filtered.length;
+  }
+
+  updateBulkBar() {
+    const bar = this.shadowRoot.getElementById('bulkBar');
+    if (!bar) return;
+    const count = this._selected.size;
+    if (count === 0) { bar.innerHTML = ''; return; }
+
+    bar.innerHTML = `
+      <span>${this.t('selectedCount', { count })}</span>
+      <button class="bulk-on" id="bulkOnBtn">${this.t('bulkAssistOn')}</button>
+      <button class="bulk-off" id="bulkOffBtn">${this.t('bulkAssistOff')}</button>
+      <button id="bulkClearBtn">${this.t('clearSelection')}</button>`;
+
+    bar.querySelector('#bulkOnBtn').addEventListener('click', () => this.applyBulkAssist(true));
+    bar.querySelector('#bulkOffBtn').addEventListener('click', () => this.applyBulkAssist(false));
+    bar.querySelector('#bulkClearBtn').addEventListener('click', () => {
+      this._selected.clear();
+      this.renderTable();
+      this.updateBulkBar();
+    });
+  }
+
+  applyBulkAssist(newVal) {
+    const entityMap = {};
+    this._entities.forEach(e => { entityMap[e.entity_id] = e; });
+
+    this._selected.forEach(id => {
+      const entity = entityMap[id];
+      if (!entity) return;
+      if (newVal !== entity.assist) {
+        this._assistChanges[id] = newVal;
+      } else {
+        delete this._assistChanges[id];
+      }
+    });
+
+    this.renderTable();
+    this.updateBulkBar();
+    this.updateChangeCount();
   }
 
   renderPaging() {
@@ -395,7 +484,9 @@ class AliasManagerCard extends HTMLElement {
     this._aliasCache = {};
     this._changes = {};
     this._assistChanges = {};
+    this._selected = new Set();
     this._page = 0;
+    this.updateBulkBar();
     this.shadowRoot.getElementById('tableWrapper').innerHTML = `<div class="empty">${this.t('loadingEntities')}</div>`;
     this.updateStatus(this.t('loading'));
     this._loaded = true;
