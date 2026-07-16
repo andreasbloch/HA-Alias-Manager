@@ -1,3 +1,62 @@
+const ALIAS_MANAGER_TRANSLATIONS = {
+  en: {
+    title: 'Alias Manager',
+    reload: 'Reload',
+    reloadTitle: 'Reload entities',
+    save: 'Save',
+    search: 'Search...',
+    allDomains: 'All domains',
+    allAreas: 'All areas',
+    allAssist: 'All',
+    assistOn: 'Assist enabled',
+    assistOff: 'Assist disabled',
+    loadingEntities: 'Loading entities...',
+    loading: 'Loading...',
+    loadingAliases: 'loading...',
+    entitiesLoaded: '{count} entities loaded.',
+    noEntities: 'No entities found.',
+    error: 'Error: {message}',
+    colEntity: 'Entity',
+    colDomain: 'Domain',
+    colAliases: 'Aliases',
+    colArea: 'Area',
+    colAssist: 'Assist',
+    aliasPlaceholder: 'alias1, alias2',
+    pageOf: '{start}–{end} of {total}',
+    saved: '{count} saved',
+    savedErrors: '{count} saved, {errors} errors',
+    assistToggle: 'Assist toggle'
+  },
+  de: {
+    title: 'Alias Manager',
+    reload: 'Neu laden',
+    reloadTitle: 'Entitäten neu laden',
+    save: 'Speichern',
+    search: 'Suchen...',
+    allDomains: 'Alle Domains',
+    allAreas: 'Alle Bereiche',
+    allAssist: 'Alle',
+    assistOn: 'Assist aktiv',
+    assistOff: 'Assist inaktiv',
+    loadingEntities: 'Lade Entitäten...',
+    loading: 'Lade...',
+    loadingAliases: 'lädt...',
+    entitiesLoaded: '{count} Entitäten geladen.',
+    noEntities: 'Keine Entitäten gefunden.',
+    error: 'Fehler: {message}',
+    colEntity: 'Entität',
+    colDomain: 'Domain',
+    colAliases: 'Aliases',
+    colArea: 'Bereich',
+    colAssist: 'Assist',
+    aliasPlaceholder: 'alias1, alias2',
+    pageOf: '{start}–{end} von {total}',
+    saved: '{count} gespeichert',
+    savedErrors: '{count} gespeichert, {errors} Fehler',
+    assistToggle: 'Assist umschalten'
+  }
+};
+
 class AliasManagerCard extends HTMLElement {
   constructor() {
     super();
@@ -9,10 +68,12 @@ class AliasManagerCard extends HTMLElement {
     this._page = 0;
     this._pageSize = 50;
     this._aliasCache = {};
+    this._lang = 'en';
   }
 
   setConfig(config) {
     this._config = config;
+    this._lang = this.resolveLang();
     this.render();
   }
 
@@ -20,8 +81,37 @@ class AliasManagerCard extends HTMLElement {
     this._hass = hass;
     if (!this._loaded) {
       this._loaded = true;
+      const lang = this.resolveLang();
+      if (lang !== this._lang) {
+        this._lang = lang;
+        this.render();
+      }
       this.loadEntities();
     }
+  }
+
+  resolveLang() {
+    let raw = this._config?.language
+      || this._hass?.locale?.language
+      || this._hass?.language
+      || (typeof navigator !== 'undefined' ? navigator.language : 'en')
+      || 'en';
+    raw = String(raw).toLowerCase();
+    if (ALIAS_MANAGER_TRANSLATIONS[raw]) return raw;
+    const base = raw.split('-')[0];
+    if (ALIAS_MANAGER_TRANSLATIONS[base]) return base;
+    return 'en';
+  }
+
+  t(key, params) {
+    const dict = ALIAS_MANAGER_TRANSLATIONS[this._lang] || ALIAS_MANAGER_TRANSLATIONS.en;
+    let str = dict[key] !== undefined ? dict[key] : (ALIAS_MANAGER_TRANSLATIONS.en[key] || key);
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+      }
+    }
+    return str;
   }
 
   getCardSize() { return 10; }
@@ -72,22 +162,22 @@ class AliasManagerCard extends HTMLElement {
       </style>
       <div class="card">
         <h2>
-          <span>Alias Manager</span>
-          <button class="reload-btn" id="reloadBtn" title="Neu laden">Neu laden</button>
-          <button class="save-btn" id="saveBtn" disabled>Speichern (<span id="changeCount">0</span>)</button>
+          <span>${this.t('title')}</span>
+          <button class="reload-btn" id="reloadBtn" title="${this.t('reloadTitle')}">${this.t('reload')}</button>
+          <button class="save-btn" id="saveBtn" disabled>${this.t('save')} (<span id="changeCount">0</span>)</button>
         </h2>
         <div class="filters">
-          <input type="text" id="searchFilter" placeholder="Suchen..." />
-          <select id="domainFilter"><option value="">Alle Domains</option></select>
-          <select id="areaFilter"><option value="">Alle Bereiche</option></select>
+          <input type="text" id="searchFilter" placeholder="${this.t('search')}" />
+          <select id="domainFilter"><option value="">${this.t('allDomains')}</option></select>
+          <select id="areaFilter"><option value="">${this.t('allAreas')}</option></select>
           <select id="assistFilter">
-            <option value="">Alle</option>
-            <option value="on">Assist aktiv</option>
-            <option value="off">Assist inaktiv</option>
+            <option value="">${this.t('allAssist')}</option>
+            <option value="on">${this.t('assistOn')}</option>
+            <option value="off">${this.t('assistOff')}</option>
           </select>
         </div>
         <div class="status" id="statusBar"></div>
-        <div id="tableWrapper"><div class="empty">Lade Entitäten...</div></div>
+        <div id="tableWrapper"><div class="empty">${this.t('loadingEntities')}</div></div>
         <div class="paging" id="pagingBar"></div>
       </div>`;
 
@@ -126,18 +216,18 @@ class AliasManagerCard extends HTMLElement {
       const areas = [...new Set(this._entities.map(e => e.area).filter(Boolean))].sort();
 
       const domSel = this.shadowRoot.getElementById('domainFilter');
-      domSel.innerHTML = '<option value="">Alle Domains</option>' + domains.map(d => `<option value="${d}">${d}</option>`).join('');
+      domSel.innerHTML = `<option value="">${this.t('allDomains')}</option>` + domains.map(d => `<option value="${d}">${d}</option>`).join('');
 
       const areaSel = this.shadowRoot.getElementById('areaFilter');
-      areaSel.innerHTML = '<option value="">Alle Bereiche</option>' + areas.map(a => `<option value="${a}">${a}</option>`).join('');
+      areaSel.innerHTML = `<option value="">${this.t('allAreas')}</option>` + areas.map(a => `<option value="${a}">${a}</option>`).join('');
 
       this._changes = {};
       this._assistChanges = {};
       this._page = 0;
       this.applyFilters();
-      this.updateStatus(`${this._entities.length} Entitäten geladen.`);
+      this.updateStatus(this.t('entitiesLoaded', { count: this._entities.length }));
     } catch(e) {
-      this.shadowRoot.getElementById('tableWrapper').innerHTML = `<div class="empty">Fehler: ${e.message}</div>`;
+      this.shadowRoot.getElementById('tableWrapper').innerHTML = `<div class="empty">${this.t('error', { message: this.esc(e.message) })}</div>`;
     }
   }
 
@@ -195,7 +285,7 @@ class AliasManagerCard extends HTMLElement {
   renderTable() {
     const pageEntities = this.getPageEntities();
     if (pageEntities.length === 0) {
-      this.shadowRoot.getElementById('tableWrapper').innerHTML = '<div class="empty">Keine Entitäten gefunden.</div>';
+      this.shadowRoot.getElementById('tableWrapper').innerHTML = `<div class="empty">${this.t('noEntities')}</div>`;
       return;
     }
 
@@ -213,13 +303,13 @@ class AliasManagerCard extends HTMLElement {
         <td><span class="badge">${e.domain}</span></td>
         <td class="aliases-cell">
           ${loading
-            ? `<span class="loading-aliases">lädt...</span>`
-            : `<input class="alias-input ${modified ? 'modified' : ''}" data-id="${this.esc(e.entity_id)}" value="${this.esc(curAlias)}" placeholder="alias1, alias2" />`
+            ? `<span class="loading-aliases">${this.t('loadingAliases')}</span>`
+            : `<input class="alias-input ${modified ? 'modified' : ''}" data-id="${this.esc(e.entity_id)}" value="${this.esc(curAlias)}" placeholder="${this.t('aliasPlaceholder')}" />`
           }
         </td>
         <td style="overflow:hidden;text-overflow:ellipsis;max-width:80px;" title="${this.esc(e.area)}"><span class="badge" style="max-width:100%;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle;">${this.esc(e.area) || '–'}</span></td>
         <td style="text-align:center">
-          <button class="toggle ${curAssist ? 'on' : 'off'}" data-id="${e.entity_id}" aria-label="Assist toggle"></button>
+          <button class="toggle ${curAssist ? 'on' : 'off'}" data-id="${e.entity_id}" aria-label="${this.t('assistToggle')}"></button>
         </td>
       </tr>`;
     }).join('');
@@ -227,9 +317,9 @@ class AliasManagerCard extends HTMLElement {
     this.shadowRoot.getElementById('tableWrapper').innerHTML = `
       <table>
         <thead><tr>
-          <th></th><th>Entität</th><th>Domain</th>
-          <th>Aliases</th><th>Bereich</th>
-          <th style="text-align:center">Assist</th>
+          <th></th><th>${this.t('colEntity')}</th><th>${this.t('colDomain')}</th>
+          <th>${this.t('colAliases')}</th><th>${this.t('colArea')}</th>
+          <th style="text-align:center">${this.t('colAssist')}</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>`;
@@ -290,12 +380,11 @@ class AliasManagerCard extends HTMLElement {
       <button id="prevBtn" ${this._page === 0 ? 'disabled' : ''}>&#8249;</button>
       ${pages}
       <button id="nextBtn" ${this._page >= totalPages - 1 ? 'disabled' : ''}>&#8250;</button>
-      <span>${start}–${end} von ${total}</span>`;
+      <span>${this.t('pageOf', { start, end, total })}</span>`;
 
     bar.querySelectorAll('button[data-page]').forEach(btn => {
       btn.addEventListener('click', () => { this._page = parseInt(btn.dataset.page); this.renderTable(); this.renderPaging(); this.loadAliasesForPage(); });
     });
-    bar.getElementById && bar.getElementById('prevBtn');
     bar.querySelector('#prevBtn')?.addEventListener('click', () => { if (this._page > 0) { this._page--; this.renderTable(); this.renderPaging(); this.loadAliasesForPage(); } });
     bar.querySelector('#nextBtn')?.addEventListener('click', () => { if (this._page < totalPages - 1) { this._page++; this.renderTable(); this.renderPaging(); this.loadAliasesForPage(); } });
   }
@@ -306,8 +395,8 @@ class AliasManagerCard extends HTMLElement {
     this._changes = {};
     this._assistChanges = {};
     this._page = 0;
-    this.shadowRoot.getElementById("tableWrapper").innerHTML = "<div class=\"empty\">Lade Entitäten...</div>";
-    this.updateStatus("Lade...");
+    this.shadowRoot.getElementById('tableWrapper').innerHTML = `<div class="empty">${this.t('loadingEntities')}</div>`;
+    this.updateStatus(this.t('loading'));
     this._loaded = true;
     this.loadEntities();
   }
@@ -352,7 +441,9 @@ class AliasManagerCard extends HTMLElement {
     this._changes = {};
     this._assistChanges = {};
     this.updateChangeCount();
-    this.updateStatus(`${saved} gespeichert${errors > 0 ? `, ${errors} Fehler` : ''}.`);
+    this.updateStatus(errors > 0
+      ? this.t('savedErrors', { count: saved, errors })
+      : this.t('saved', { count: saved }) + '.');
     this.applyFilters();
   }
 
