@@ -7,8 +7,7 @@
 
 A custom Lovelace card for bulk management of entity aliases and Assist exposure in Home Assistant.
 
-![HA Alias Manager](screenshot.png?raw=true)
-
+<img width="737" height="378" alt="firefox_VFgdtCcu7d" src="https://github.com/user-attachments/assets/8b677d0a-f46b-480c-ae88-5a9ed7404055" />
 
 ## Features
 
