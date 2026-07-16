@@ -24,5 +24,11 @@
   "pageOf": "{start}–{end} van {total}",
   "saved": "{count} opgeslagen",
   "savedErrors": "{count} opgeslagen, {errors} fouten",
-  "assistToggle": "Assist omschakelen"
+  "assistToggle": "Assist omschakelen",
+  "selectedCount": "{count} geselecteerd",
+  "bulkAssistOn": "Assist AAN",
+  "bulkAssistOff": "Assist UIT",
+  "clearSelection": "Selectie wissen",
+  "selectAllTitle": "Alle gefilterde entiteiten selecteren",
+  "selectRow": "Entiteit selecteren"
 }

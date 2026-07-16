@@ -24,5 +24,11 @@
   "pageOf": "{start}–{end} of {total}",
   "saved": "{count} saved",
   "savedErrors": "{count} saved, {errors} errors",
-  "assistToggle": "Toggle Assist"
+  "assistToggle": "Toggle Assist",
+  "selectedCount": "{count} selected",
+  "bulkAssistOn": "Assist ON",
+  "bulkAssistOff": "Assist OFF",
+  "clearSelection": "Clear selection",
+  "selectAllTitle": "Select all filtered entities",
+  "selectRow": "Select entity"
 }

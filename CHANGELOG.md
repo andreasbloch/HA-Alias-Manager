@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.2.0] - 2026-07-16
+
+### Added
+
+- **Bulk Assist toggle**: the row checkboxes are now functional
+  - Selection is kept across page and filter changes, so entities from different filters can be combined
+  - Header checkbox selects/deselects **all filtered** entities (across all pages), with indeterminate state on partial selection
+  - Bulk action bar appears when at least one entity is selected: *Assist ON*, *Assist OFF*, *Clear selection*
+  - Bulk actions are staged like single edits — nothing is written until *Save* is pressed, and entities already in the target state produce no change
+- 6 new translation keys in all 10 languages (`selectedCount`, `bulkAssistOn`, `bulkAssistOff`, `clearSelection`, `selectAllTitle`, `selectRow`)
+
+### Changed
+
+- Entity IDs in row checkboxes are now HTML-escaped consistently
+- Reload clears the current selection
+
 ## [1.1.1] - 2026-07-16
 
 ### Added

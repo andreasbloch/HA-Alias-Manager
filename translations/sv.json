@@ -24,5 +24,11 @@
   "pageOf": "{start}–{end} av {total}",
   "saved": "{count} sparade",
   "savedErrors": "{count} sparade, {errors} fel",
-  "assistToggle": "Växla Assist"
+  "assistToggle": "Växla Assist",
+  "selectedCount": "{count} valda",
+  "bulkAssistOn": "Assist PÅ",
+  "bulkAssistOff": "Assist AV",
+  "clearSelection": "Rensa urval",
+  "selectAllTitle": "Välj alla filtrerade entiteter",
+  "selectRow": "Välj entitet"
 }

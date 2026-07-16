@@ -24,5 +24,11 @@
   "pageOf": "{start}–{end} z {total}",
   "saved": "Uloženo: {count}",
   "savedErrors": "Uloženo: {count}, chyby: {errors}",
-  "assistToggle": "Přepnout Assist"
+  "assistToggle": "Přepnout Assist",
+  "selectedCount": "{count} vybráno",
+  "bulkAssistOn": "Assist ZAP",
+  "bulkAssistOff": "Assist VYP",
+  "clearSelection": "Zrušit výběr",
+  "selectAllTitle": "Vybrat všechny filtrované entity",
+  "selectRow": "Vybrat entitu"
 }

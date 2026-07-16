@@ -24,5 +24,11 @@
   "pageOf": "{start}–{end} de {total}",
   "saved": "{count} salvos",
   "savedErrors": "{count} salvos, {errors} erros",
-  "assistToggle": "Alternar Assist"
+  "assistToggle": "Alternar Assist",
+  "selectedCount": "{count} selecionados",
+  "bulkAssistOn": "Assist LIGADO",
+  "bulkAssistOff": "Assist DESLIGADO",
+  "clearSelection": "Limpar seleção",
+  "selectAllTitle": "Selecionar todas as entidades filtradas",
+  "selectRow": "Selecionar entidade"
 }

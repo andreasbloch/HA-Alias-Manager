@@ -24,5 +24,11 @@
   "pageOf": "{start}–{end} di {total}",
   "saved": "{count} salvati",
   "savedErrors": "{count} salvati, {errors} errori",
-  "assistToggle": "Attiva/disattiva Assist"
+  "assistToggle": "Attiva/disattiva Assist",
+  "selectedCount": "{count} selezionati",
+  "bulkAssistOn": "Assist ON",
+  "bulkAssistOff": "Assist OFF",
+  "clearSelection": "Annulla selezione",
+  "selectAllTitle": "Seleziona tutte le entità filtrate",
+  "selectRow": "Seleziona entità"
 }

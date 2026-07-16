@@ -24,5 +24,11 @@
   "pageOf": "{start}–{end} z {total}",
   "saved": "Zapisano: {count}",
   "savedErrors": "Zapisano: {count}, błędy: {errors}",
-  "assistToggle": "Przełącz Assist"
+  "assistToggle": "Przełącz Assist",
+  "selectedCount": "{count} wybrano",
+  "bulkAssistOn": "Assist WŁ.",
+  "bulkAssistOff": "Assist WYŁ.",
+  "clearSelection": "Wyczyść zaznaczenie",
+  "selectAllTitle": "Zaznacz wszystkie filtrowane encje",
+  "selectRow": "Zaznacz encję"
 }

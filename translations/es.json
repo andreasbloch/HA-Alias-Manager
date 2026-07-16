@@ -24,5 +24,11 @@
   "pageOf": "{start}–{end} de {total}",
   "saved": "{count} guardado(s)",
   "savedErrors": "{count} guardado(s), {errors} error(es)",
-  "assistToggle": "Alternar Assist"
+  "assistToggle": "Alternar Assist",
+  "selectedCount": "{count} seleccionados",
+  "bulkAssistOn": "Assist SÍ",
+  "bulkAssistOff": "Assist NO",
+  "clearSelection": "Borrar selección",
+  "selectAllTitle": "Seleccionar todas las entidades filtradas",
+  "selectRow": "Seleccionar entidad"
 }
