@@ -18,6 +18,7 @@ A custom Lovelace card for bulk management of entity aliases and Assist exposure
 - 📄 **Pagination** — 50 entities per page with lazy alias loading for performance
 - 💾 **Bulk save** — save all changes at once
 - 🔄 **Reload** — refresh entity list without reloading the page
+- Multilanguage support
 
 ## Why this card?
 
