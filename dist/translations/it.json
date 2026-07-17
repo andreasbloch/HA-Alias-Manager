@@ -30,5 +30,14 @@
   "bulkAssistOff": "Assist OFF",
   "clearSelection": "Annulla selezione",
   "selectAllTitle": "Seleziona tutte le entità filtrate",
-  "selectRow": "Seleziona entità"
+  "selectRow": "Seleziona entità",
+  "export": "Esporta",
+  "exportTitle": "Esporta tutti gli alias e lo stato Assist come JSON",
+  "import": "Importa",
+  "importTitle": "Importa un export JSON – le modifiche vengono preparate, non salvate automaticamente",
+  "loadingAllProgress": "Caricamento alias... {done}/{total}",
+  "importReport": "Importazione: {aliases} modifiche agli alias e {assist} modifiche Assist preparate, {unknown} entità sconosciute ignorate. Controlla e premi Salva.",
+  "importInvalid": "File di importazione non valido.",
+  "entitiesLoadedExposed": "{count} entità · {exposed} esposte ad Assist",
+  "filterNoAlias": "Esposte senza alias"
 }

@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.3.0] - 2026-07-17
+
+### Added
+
+- **Export**: download all aliases and Assist exposure states as a JSON file — for backups
+  before replacing devices or migrating to a new Home Assistant instance
+- **Import**: load a previously exported JSON file. Differences against the current registry
+  are staged as pending changes (nothing is written until *Save* is pressed); unknown
+  entities are counted and skipped, and a summary report is shown
+- **Load all aliases**: export/import fetch all aliases in parallel chunks of 25 with a
+  progress indicator (seconds instead of minutes on large installations)
+- **New filter "Exposed without alias"**: finds entities that are exposed to Assist but have
+  no alias yet — the ones most likely to be misunderstood by voice assistants
+- **Exposure counter**: the status line now shows how many entities are exposed to Assist —
+  useful for keeping LLM-based assistants' context small
+- 9 new translation keys in all 10 languages
+
+### Changed
+
+- The saved-confirmation now includes the entity/exposure summary
+
+## [1.2.2] - 2026-07-17
+
+### Fixed
+
+- **Broken HACS installation since v1.1.1**: the `zip_release` distribution registered the
+  zip archive as the Lovelace resource ("Custom element doesn't exist"). Distribution now
+  uses the standard `dist/` layout — HACS downloads `dist/ha-alias-manager.js` and the
+  `dist/translations/` folder directly from the repository tree and registers the correct
+  `.js` resource automatically.
+- Removed the release-zip workflow; releases must not carry assets (HACS prefers release
+  assets over the repository tree for tagged installs).
+- Manual install: copy the contents of `dist/` (js **and** `translations/`) into `config/www/`.
+
+## [1.2.1] - 2026-07-17 [YANKED]
+
+- Broken release (zip asset shadowed the repository tree). Use 1.2.2 instead.
+
 ## [1.2.0] - 2026-07-16
 
 ### Added

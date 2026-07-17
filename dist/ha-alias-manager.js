@@ -1,4 +1,4 @@
-const CARD_VERSION = '1.2.2';
+const CARD_VERSION = '1.3.0';
 const MODULE_URL = import.meta.url;
 const SUPPORTED_LANGUAGES = ['en', 'de', 'fr', 'es', 'it', 'nl', 'pl', 'pt', 'cs', 'sv'];
 
@@ -36,7 +36,16 @@ const FALLBACK_EN = {
   bulkAssistOff: 'Assist OFF',
   clearSelection: 'Clear selection',
   selectAllTitle: 'Select all filtered entities',
-  selectRow: 'Select entity'
+  selectRow: 'Select entity',
+  export: 'Export',
+  exportTitle: 'Export all aliases and Assist status as JSON',
+  import: 'Import',
+  importTitle: 'Import a JSON export \u2013 changes are staged, not saved automatically',
+  loadingAllProgress: 'Loading aliases... {done}/{total}',
+  importReport: 'Import: {aliases} alias changes and {assist} Assist changes staged, {unknown} unknown entities skipped. Review and press Save.',
+  importInvalid: 'Invalid import file.',
+  entitiesLoadedExposed: '{count} entities \u00b7 {exposed} exposed to Assist',
+  filterNoAlias: 'Exposed without alias'
 };
 
 class AliasManagerCard extends HTMLElement {
@@ -130,6 +139,7 @@ class AliasManagerCard extends HTMLElement {
         :host { display: block; font-family: var(--primary-font-family, sans-serif); }
         .card { background: var(--card-background-color, white); border-radius: 12px; padding: 16px; }
         h2 { margin: 0 0 12px; font-size: 18px; font-weight: 500; color: var(--primary-text-color); display: flex; align-items: center; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
+        .actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
         input, select { font-size: 13px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--divider-color, #ccc); background: var(--card-background-color, white); color: var(--primary-text-color); }
         .filters input { flex: 1; min-width: 150px; }
@@ -177,8 +187,13 @@ class AliasManagerCard extends HTMLElement {
       <div class="card">
         <h2>
           <span>${this.t('title')}</span>
-          <button class="reload-btn" id="reloadBtn" title="${this.t('reloadTitle')}">${this.t('reload')}</button>
-          <button class="save-btn" id="saveBtn" disabled>${this.t('save')} (<span id="changeCount">0</span>)</button>
+          <span class="actions">
+            <button class="reload-btn" id="reloadBtn" title="${this.t('reloadTitle')}">${this.t('reload')}</button>
+            <button class="reload-btn" id="exportBtn" title="${this.t('exportTitle')}">${this.t('export')}</button>
+            <button class="reload-btn" id="importBtn" title="${this.t('importTitle')}">${this.t('import')}</button>
+            <input type="file" id="importFile" accept=".json,application/json" style="display:none" />
+            <button class="save-btn" id="saveBtn" disabled>${this.t('save')} (<span id="changeCount">0</span>)</button>
+          </span>
         </h2>
         <div class="filters">
           <input type="text" id="searchFilter" placeholder="${this.t('search')}" />
@@ -188,6 +203,7 @@ class AliasManagerCard extends HTMLElement {
             <option value="">${this.t('allAssist')}</option>
             <option value="on">${this.t('assistOn')}</option>
             <option value="off">${this.t('assistOff')}</option>
+            <option value="noalias">${this.t('filterNoAlias')}</option>
           </select>
         </div>
         <div class="status" id="statusBar"></div>
@@ -199,9 +215,18 @@ class AliasManagerCard extends HTMLElement {
     this.shadowRoot.getElementById('searchFilter').addEventListener('input', () => { this._page = 0; this.applyFilters(); });
     this.shadowRoot.getElementById('domainFilter').addEventListener('change', () => { this._page = 0; this.applyFilters(); });
     this.shadowRoot.getElementById('areaFilter').addEventListener('change', () => { this._page = 0; this.applyFilters(); });
-    this.shadowRoot.getElementById('assistFilter').addEventListener('change', () => { this._page = 0; this.applyFilters(); });
+    this.shadowRoot.getElementById('assistFilter').addEventListener('change', async () => {
+      this._page = 0;
+      if (this.shadowRoot.getElementById('assistFilter').value === 'noalias') {
+        await this.loadAllAliases();
+      }
+      this.applyFilters();
+    });
     this.shadowRoot.getElementById('saveBtn').addEventListener('click', () => this.saveChanges());
     this.shadowRoot.getElementById('reloadBtn').addEventListener('click', () => this.reloadEntities());
+    this.shadowRoot.getElementById('exportBtn').addEventListener('click', () => this.exportAll());
+    this.shadowRoot.getElementById('importBtn').addEventListener('click', () => this.shadowRoot.getElementById('importFile').click());
+    this.shadowRoot.getElementById('importFile').addEventListener('change', (ev) => this.importFile(ev.target.files[0]));
   }
 
   async loadEntities() {
@@ -240,7 +265,7 @@ class AliasManagerCard extends HTMLElement {
       this._assistChanges = {};
       this._page = 0;
       this.applyFilters();
-      this.updateStatus(this.t('entitiesLoaded', { count: this._entities.length }));
+      this.updateStatus(this.statusSummary());
     } catch(e) {
       this.shadowRoot.getElementById('tableWrapper').innerHTML = `<div class="empty">${this.t('error', { message: this.esc(e.message) })}</div>`;
     }
@@ -259,6 +284,11 @@ class AliasManagerCard extends HTMLElement {
       const curAssist = this._assistChanges[e.entity_id] !== undefined ? this._assistChanges[e.entity_id] : e.assist;
       if (assist === 'on' && !curAssist) return false;
       if (assist === 'off' && curAssist) return false;
+      if (assist === 'noalias') {
+        if (!curAssist) return false;
+        const curAlias = this._changes[e.entity_id] !== undefined ? this._changes[e.entity_id] : (e.aliases || '');
+        if (curAlias.trim() !== '') return false;
+      }
       return true;
     });
     this.renderTable();
@@ -295,6 +325,127 @@ class AliasManagerCard extends HTMLElement {
       }
     }));
     this.renderTable();
+  }
+
+  async loadAllAliases() {
+    // Hydrate from cache first
+    this._entities.forEach(e => {
+      if (e.aliases === null && this._aliasCache[e.entity_id] !== undefined) e.aliases = this._aliasCache[e.entity_id];
+    });
+    const missing = this._entities.filter(e => e.aliases === null);
+    if (missing.length === 0) return;
+    if (this._loadingAll) return this._loadingAll;
+
+    const CHUNK = 25;
+    this._loadingAll = (async () => {
+      for (let i = 0; i < missing.length; i += CHUNK) {
+        await Promise.all(missing.slice(i, i + CHUNK).map(async e => {
+          try {
+            const detail = await this._hass.callWS({ type: 'config/entity_registry/get', entity_id: e.entity_id });
+            const aliases = (detail.aliases || []).filter(a => a !== null).join(', ');
+            e.aliases = aliases;
+            this._aliasCache[e.entity_id] = aliases;
+          } catch (err) {
+            e.aliases = '';
+            this._aliasCache[e.entity_id] = '';
+          }
+        }));
+        this.updateStatus(this.t('loadingAllProgress', { done: Math.min(i + CHUNK, missing.length), total: missing.length }));
+      }
+    })();
+
+    try {
+      await this._loadingAll;
+    } finally {
+      this._loadingAll = null;
+    }
+    this.updateStatus(this.statusSummary());
+  }
+
+  statusSummary() {
+    const exposed = this._entities.filter(e =>
+      this._assistChanges[e.entity_id] !== undefined ? this._assistChanges[e.entity_id] : e.assist
+    ).length;
+    return this.t('entitiesLoadedExposed', { count: this._entities.length, exposed });
+  }
+
+  async exportAll() {
+    await this.loadAllAliases();
+
+    const entities = {};
+    this._entities.forEach(e => {
+      entities[e.entity_id] = {
+        aliases: (e.aliases || '').split(',').map(a => a.trim()).filter(Boolean),
+        assist: e.assist
+      };
+    });
+
+    const payload = {
+      type: 'ha-alias-manager-export',
+      version: 1,
+      card_version: CARD_VERSION,
+      exported_at: new Date().toISOString(),
+      entities
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `alias-manager-export-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async importFile(file) {
+    if (!file) return;
+    let payload;
+    try {
+      payload = JSON.parse(await file.text());
+      if (payload?.type !== 'ha-alias-manager-export' || typeof payload.entities !== 'object' || payload.entities === null) {
+        throw new Error('format');
+      }
+    } catch (e) {
+      this.updateStatus(this.t('importInvalid'));
+      this.shadowRoot.getElementById('importFile').value = '';
+      return;
+    }
+
+    // Diffing requires the current server state of all aliases
+    await this.loadAllAliases();
+
+    const entityMap = {};
+    this._entities.forEach(e => { entityMap[e.entity_id] = e; });
+
+    let aliasStaged = 0, assistStaged = 0, unknown = 0;
+    for (const [id, data] of Object.entries(payload.entities)) {
+      const entity = entityMap[id];
+      if (!entity) { unknown++; continue; }
+
+      if (Array.isArray(data.aliases)) {
+        const importedAlias = data.aliases.filter(a => a !== null && a !== undefined && String(a).trim() !== '').map(a => String(a).trim()).join(', ');
+        if (importedAlias !== (entity.aliases || '')) {
+          this._changes[id] = importedAlias;
+          aliasStaged++;
+        } else {
+          delete this._changes[id];
+        }
+      }
+
+      if (typeof data.assist === 'boolean') {
+        if (data.assist !== entity.assist) {
+          this._assistChanges[id] = data.assist;
+          assistStaged++;
+        } else {
+          delete this._assistChanges[id];
+        }
+      }
+    }
+
+    this.shadowRoot.getElementById('importFile').value = '';
+    this.updateChangeCount();
+    this.applyFilters();
+    this.updateStatus(this.t('importReport', { aliases: aliasStaged, assist: assistStaged, unknown }));
   }
 
   renderTable() {
@@ -533,9 +684,9 @@ class AliasManagerCard extends HTMLElement {
     this._changes = {};
     this._assistChanges = {};
     this.updateChangeCount();
-    this.updateStatus(errors > 0
+    this.updateStatus((errors > 0
       ? this.t('savedErrors', { count: saved, errors })
-      : this.t('saved', { count: saved }) + '.');
+      : this.t('saved', { count: saved })) + ' \u00b7 ' + this.statusSummary());
     this.applyFilters();
   }
 

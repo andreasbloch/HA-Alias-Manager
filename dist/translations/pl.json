@@ -30,5 +30,14 @@
   "bulkAssistOff": "Assist WYŁ.",
   "clearSelection": "Wyczyść zaznaczenie",
   "selectAllTitle": "Zaznacz wszystkie filtrowane encje",
-  "selectRow": "Zaznacz encję"
+  "selectRow": "Zaznacz encję",
+  "export": "Eksport",
+  "exportTitle": "Eksportuj wszystkie aliasy i status Assist jako JSON",
+  "import": "Import",
+  "importTitle": "Importuj eksport JSON – zmiany są przygotowywane, nie zapisywane automatycznie",
+  "loadingAllProgress": "Ładowanie aliasów... {done}/{total}",
+  "importReport": "Import: przygotowano {aliases} zmian aliasów i {assist} zmian Assist, pominięto {unknown} nieznanych encji. Sprawdź i naciśnij Zapisz.",
+  "importInvalid": "Nieprawidłowy plik importu.",
+  "entitiesLoadedExposed": "{count} encji · {exposed} udostępnionych dla Assist",
+  "filterNoAlias": "Udostępnione bez aliasu"
 }

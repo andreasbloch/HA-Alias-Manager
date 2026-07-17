@@ -30,5 +30,14 @@
   "bulkAssistOff": "Assist AV",
   "clearSelection": "Rensa urval",
   "selectAllTitle": "Välj alla filtrerade entiteter",
-  "selectRow": "Välj entitet"
+  "selectRow": "Välj entitet",
+  "export": "Exportera",
+  "exportTitle": "Exportera alla alias och Assist-status som JSON",
+  "import": "Importera",
+  "importTitle": "Importera en JSON-export – ändringar förbereds, sparas inte automatiskt",
+  "loadingAllProgress": "Laddar alias... {done}/{total}",
+  "importReport": "Import: {aliases} aliasändringar och {assist} Assist-ändringar förberedda, {unknown} okända entiteter hoppades över. Granska och tryck på Spara.",
+  "importInvalid": "Ogiltig importfil.",
+  "entitiesLoadedExposed": "{count} entiteter · {exposed} exponerade för Assist",
+  "filterNoAlias": "Exponerade utan alias"
 }

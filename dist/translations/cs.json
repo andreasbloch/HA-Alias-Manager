@@ -30,5 +30,14 @@
   "bulkAssistOff": "Assist VYP",
   "clearSelection": "Zrušit výběr",
   "selectAllTitle": "Vybrat všechny filtrované entity",
-  "selectRow": "Vybrat entitu"
+  "selectRow": "Vybrat entitu",
+  "export": "Export",
+  "exportTitle": "Exportovat všechny aliasy a stav Assist jako JSON",
+  "import": "Import",
+  "importTitle": "Importovat JSON export – změny se připraví, neukládají se automaticky",
+  "loadingAllProgress": "Načítání aliasů... {done}/{total}",
+  "importReport": "Import: připraveno {aliases} změn aliasů a {assist} změn Assist, přeskočeno {unknown} neznámých entit. Zkontrolujte a stiskněte Uložit.",
+  "importInvalid": "Neplatný soubor importu.",
+  "entitiesLoadedExposed": "{count} entit · {exposed} zpřístupněno pro Assist",
+  "filterNoAlias": "Zpřístupněné bez aliasu"
 }

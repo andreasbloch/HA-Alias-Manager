@@ -30,5 +30,14 @@
   "bulkAssistOff": "Assist UIT",
   "clearSelection": "Selectie wissen",
   "selectAllTitle": "Alle gefilterde entiteiten selecteren",
-  "selectRow": "Entiteit selecteren"
+  "selectRow": "Entiteit selecteren",
+  "export": "Exporteren",
+  "exportTitle": "Alle aliassen en Assist-status als JSON exporteren",
+  "import": "Importeren",
+  "importTitle": "JSON-export importeren – wijzigingen worden klaargezet, niet automatisch opgeslagen",
+  "loadingAllProgress": "Aliassen laden... {done}/{total}",
+  "importReport": "Import: {aliases} aliaswijzigingen en {assist} Assist-wijzigingen klaargezet, {unknown} onbekende entiteiten overgeslagen. Controleer en druk op Opslaan.",
+  "importInvalid": "Ongeldig importbestand.",
+  "entitiesLoadedExposed": "{count} entiteiten · {exposed} vrijgegeven voor Assist",
+  "filterNoAlias": "Vrijgegeven zonder alias"
 }
